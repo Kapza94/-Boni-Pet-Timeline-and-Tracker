@@ -191,19 +191,62 @@ Supportive, brief, never clinical, never alarmist.
 
 ---
 
-## Development workflow
+## Development workflow — strict TDD
+
+We use the **superpowers `test-driven-development` skill**. Invoke it at
+the start of every coding turn (it's a rigid skill — follow it exactly,
+don't adapt away the discipline).
+
+**Iron law:** no production code without a failing test first. If
+production code lands without a prior failing test, delete it and start
+over from the test.
+
+Red → Green → Refactor:
+1. Write one failing test for the next behavior.
+2. Run the test, **watch it fail for the right reason** (not a typo).
+3. Write the minimum code to pass.
+4. Run the test, watch it pass.
+5. Refactor only while green.
+6. Repeat.
+
+### Per-feature loop
 
 1. Pick the next feature from `FEATURES.md` (top to bottom unless a
    dependency reroutes you).
-2. Write the migration first (`supabase/migrations/...sql`), apply
-   locally (`supabase db reset` or `supabase migration up`).
-3. Update Zod schemas + TanStack Query hook for the table.
+2. For backend features: write a failing DB/RLS/RPC test
+   (`supabase test db` or a vitest hitting the local Supabase) before
+   creating the migration. Apply migration locally
+   (`supabase db reset` or `supabase migration up`) only to make the
+   test pass.
+3. Update Zod schemas + TanStack Query hook for the table — also test-first.
 4. Build the screen using existing primitives (`Glass`, `Sheet`,
    `BoniNavBar`, etc.). If a primitive is missing, add it under
-   `components/` — don't inline a one-off.
-5. Verify with a smoke test (Detox or component-level), plus a
-   manual run on the iOS simulator.
-6. Commit. PR per feature. Reference the F## ID in the title.
+   `components/` — don't inline a one-off. Primitives are built
+   test-first too.
+5. Verify on the iOS simulator (real human eyes, not just green tests).
+6. Commit. One commit per feature. Reference the F## ID in the title.
+
+### Test commands
+
+- `npm test` — run unit + component tests once.
+- `npm run test:watch` — TDD loop.
+- `npm test -- <file>` — single-file run.
+
+### Test infra
+
+- **jest-expo** preset — handles RN + Expo module mocks.
+- **@testing-library/react-native** — component queries + interactions.
+- **@testing-library/jest-native** — extra matchers (`toBeOnTheScreen`, etc).
+- Skia + BlurView are stubbed in `jest.setup.ts` so visual primitives can
+  be unit-tested without a real GPU. Visual regression (snapshot or
+  screenshot) is a separate later step.
+
+### One-time debts (TDD)
+
+- **F00 primitives** (`AmbientCanvas`, `Glass`) shipped before TDD was
+  in place. They get retroactive characterization tests in F01 that
+  lock current behavior. This is a recorded exception, not a precedent.
+  Every primitive landing from F01 onward is strict test-first.
 
 ### Useful commands
 - `npx expo start` — launch dev server.
