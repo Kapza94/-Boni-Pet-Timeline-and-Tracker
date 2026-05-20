@@ -240,3 +240,25 @@ Format: date, one-line insight, optional context.
   committed before any code. Source design bundle lives in
   `/tmp/boni-design/extracted/boni/` for visual reference (don't
   render in a browser; read the source).
+- **2026-05-20 (F00)** — npm cache had root-owned files
+  (`~/.npm/_cacache/...`). Workaround: pass
+  `npm_config_cache=/tmp/npm-cache-boni` for installs. Permanent fix
+  the user can run: `sudo chown -R 501:20 ~/.npm`.
+- **2026-05-20 (F00)** — npm peer-dep resolution failed on
+  expo-linking when the project path has trailing whitespace
+  (`.../Boni Pet Timeline and Log. /`). Workaround: install with
+  `--legacy-peer-deps`. Consider renaming the directory if it keeps
+  biting (would require closing the IDE first).
+- **2026-05-20 (F00)** — `create-expo-app@latest` pulls Tailwind v4 by
+  default through transitive specifiers. NativeWind 4.x needs Tailwind
+  3.4.x. Always pin `tailwindcss@^3.4.0` immediately after.
+- **2026-05-20 (F00)** — `npx expo install` doesn't accept `--cache`
+  flag; pass via `npm_config_cache=...` env var instead.
+- **2026-05-20 (F00)** — Reanimated 4 worklets require
+  `react-native-worklets` (now bundled by Expo SDK 54 default
+  template). Don't manually add `react-native-reanimated/plugin` to
+  babel — the new build system handles it.
+- **2026-05-20 (F00)** — BlurView on iOS uses `intensity` 0–100 where
+  100 ≈ 50px blur radius. To hit the 24px/36px design spec, we map
+  `blur * 2` as intensity — works empirically; revisit with real
+  device side-by-side once the design system ships.
