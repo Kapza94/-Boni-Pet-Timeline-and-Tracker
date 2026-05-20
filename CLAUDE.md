@@ -231,27 +231,45 @@ Red → Green → Refactor:
 5. Refactor only while green.
 6. Repeat.
 
-### Branching + PR workflow
+### Branching + PR workflow (two-branch flow)
 
-- **main is always shippable.** Only completed features land. Never
-  commit directly to main (the bootstrap commits and one-line `docs:`
-  notes are the historical exception, not the rule).
-- **One branch per FEATURES.md ID.** Naming:
-  - `feat/F##-short-slug` — feature work (`feat/F02-auth`,
-    `feat/F03-onboarding`)
-  - `fix/<slug>` — bug fixes against an already-shipped feature
-  - `chore/<slug>` — tooling, deps, config (`chore/jest-infra`)
-  - `docs/<slug>` — docs-only changes
-  - `refactor/<slug>` — non-behavior code reshaping
-- **Branch off main**, do all the TDD red-green-refactor commits there.
-  Many small commits inside the branch are fine and encouraged — they
-  document the path.
-- **Squash-merge into main** when the feature is green + visually
-  verified on the simulator + the PR has been reviewed. Main gets one
-  `F##: <feature>` commit per branch, so its log reads as a clean
-  changelog and a feature reverts in a single shot.
-- **Delete the branch** after squash-merge. No long-lived branches.
-- **PR title** mirrors the squash commit title: `F##: <feature>`.
+Two long-lived branches:
+
+- **`main`** — always clean, always the most-recent shippable build.
+  Nothing lands here unless every test is green, the feature works
+  on the simulator, and we'd be comfortable cutting a TestFlight
+  build off it. Never commit directly to main.
+- **`dev`** — the integration branch. All feature branches merge
+  here first. Can briefly hold in-progress state across multiple
+  features when they cross-depend.
+
+Short-lived branches (one per FEATURES.md ID):
+
+- `feat/F##-short-slug` — feature work (`feat/F02-auth`,
+  `feat/F03-onboarding`)
+- `fix/<slug>` — bug fixes against an already-shipped feature
+- `chore/<slug>` — tooling, deps, config (`chore/jest-infra`)
+- `docs/<slug>` — docs-only changes
+- `refactor/<slug>` — non-behavior code reshaping
+
+**Daily flow**:
+
+1. Branch off `dev`: `git checkout dev && git pull && git checkout -b feat/F##-slug`.
+2. Do the TDD red-green-refactor commits on the branch. Many small
+   commits are fine — they document the path. `wip:` commits OK
+   mid-flight; squash strips them.
+3. When feature is green + visually verified on the simulator:
+   squash-merge into `dev` as `F##: <feature>`. Delete the branch.
+4. **End of day** (or whenever `dev` is in a known-good "demo-able"
+   state): fast-forward or squash-merge `dev` → `main`. Tag the
+   main SHA if it's worth pinning (`v0.x` markers as we approach
+   TestFlight).
+
+**Never** commit directly to main. The bootstrap commits + F01
+landed on main as a historical pre-`dev` exception; from F02
+onward, all work flows through `dev`.
+
+**PR titles** mirror the squash commit title: `F##: <feature>`.
 
 ### Per-feature loop
 
@@ -355,3 +373,131 @@ Format: date, one-line insight, optional context.
   whole set into the bundle. Bundle policy: tolerable while we build;
   if RN payload becomes a concern, swap LIcon to a hand-curated
   `iconMap.ts` of the ~30 glyphs Boni actually uses.
+- **2026-05-20 (F01)** — NativeWind's babel preset injects an internal
+  `_ReactNativeCSSInterop` binding into every transformed module. That
+  binding leaks into `jest.mock` factory scope-analysis and breaks any
+  mock that calls `require()` inside its factory. Fix: split
+  `babel.config.js` by `NODE_ENV` so the NativeWind preset is off for
+  jest, and move mocks into `__mocks__/<package>.js` files (auto-loaded
+  by name) instead of inline `jest.mock(..., () => ...)` factories.
+- **2026-05-20 (F01)** — `@gorhom/bottom-sheet`'s own mock at
+  `@gorhom/bottom-sheet/mock` renders children unconditionally. Our
+  Sheet tests therefore can't assert visibility tracking; they assert
+  the public contract instead (ref exposes present + dismiss;
+  invoking them doesn't throw). Animation + visibility verified
+  visually on the simulator.
+
+---
+
+## 🌅 Tomorrow-morning handover
+
+**Last session ended 2026-05-20.** Pick up exactly here.
+
+### Where we are right now
+
+- Branches in the repo (after tonight's push):
+  - `main` — 11 commits, clean. Contains F00 bootstrap + 3 F01
+    primitives (Eyebrow, SerifTitle, LIcon).
+  - `dev` — created tonight, **same SHA as main**. From tomorrow
+    onward this is where all feature work integrates first.
+  - `feat/F01-design-system` — 9 commits ahead of `dev`. Holds the
+    rest of F01: PressableSurface, useReduceMotion, Avatar,
+    AvatarStack, BoniNavBar, Sheet (+ BottomSheetModalProvider
+    wiring), characterization tests for AmbientCanvas + Glass, the
+    Jest hardening, and the WIP kitchen-sink test scaffold.
+- Test suite on `feat/F01-design-system`: **56 passing across 11
+  suites**, **1 RED suite** (`app/kitchen-sink.test.tsx`) —
+  intentionally failing because the matching `app/kitchen-sink.tsx`
+  impl is the next thing to write.
+- Live services last running:
+  - Supabase local stack (`npx supabase start` — Docker-backed).
+    May have shut down with the laptop; just rerun.
+  - Metro on iPhone 16e simulator. Need to relaunch.
+
+### Resume in this order
+
+1. `cd "/Users/kapza/Documents/Projects/Boni Pet Timeline and Log. "`
+2. Open Docker Desktop (wait for it to be ready).
+3. `npx supabase start` (cached images, ~30s).
+4. `git fetch && git checkout feat/F01-design-system`
+5. `DEVELOPER_DIR=/Users/kapza/Downloads/Xcode.app/Contents/Developer npx expo start --ios`
+   (DEVELOPER_DIR needed because Xcode lives in `~/Downloads/Xcode.app`,
+   not `/Applications/Xcode.app`. Permanent fix: move Xcode to
+   `/Applications` and `sudo xcode-select -s
+   /Applications/Xcode.app/Contents/Developer`.)
+6. `npm test` — confirm baseline: 56 passing, 1 RED on kitchen-sink.
+
+### What to finish on `feat/F01-design-system` (in order)
+
+1. **Implement `app/kitchen-sink.tsx`** to satisfy the existing
+   `app/kitchen-sink.test.tsx`. Required content (driven by the
+   test's `getByText` assertions):
+   - Eyebrow "F01 · KITCHEN SINK"
+   - `BoniNavBar` with title "Primitives"
+   - `SerifTitle` hero italic "Every day, every memory."
+   - `Avatar` with initials "SA"
+   - `AvatarStack` with overflow producing "+2"
+   - `PressableSurface` labelled "Open sheet" that opens a `Sheet`
+   - A `Glass` card with body copy mentioning "refraction edge"
+   - Plus enough primitive coverage to count as a proper "every
+     primitive on one screen" demo: `LIcon` in a few sizes, the
+     Glass strength + elevation matrix, a `useReduceMotion` readout
+     line.
+2. **Update `app/index.tsx`** to redirect to `/kitchen-sink` instead
+   of `/scaffold` (one-line change).
+3. **Manual verify on the simulator** — every primitive renders, no
+   red boxes, press feedback works, Sheet opens via the
+   PressableSurface and closes via the backdrop. Toggle iOS
+   Settings → Accessibility → Motion → Reduce Motion and confirm
+   AmbientCanvas stops drifting and PressableSurface skips the
+   scale animation.
+4. **Delete `app/scaffold.tsx`** (replaced by kitchen-sink) — but
+   only after kitchen-sink is verified.
+5. **Run `npm test`** — expect 12 passing suites, no REDs.
+6. **Squash-merge F01 into `dev`** (NOT main; main stays clean
+   until end of day): `git checkout dev && git pull && git merge
+   --squash feat/F01-design-system && git commit -m "F01: design
+   system primitives"`. Push `dev`. Delete `feat/F01-design-system`
+   locally and on origin.
+
+### Then start F02 (auth) — off `dev`
+
+- `git checkout dev && git pull && git checkout -b feat/F02-auth`.
+- Read `FEATURES.md` F02 section before writing any code.
+- Apple Sign-In: needs `expo-apple-authentication` install.
+- Google Sign-In: needs `expo-auth-session` setup.
+- Email/password: simplest path, do first.
+- Server side: Supabase Auth providers enabled in
+  `supabase/config.toml`; database trigger
+  `on_auth_user_created` → creates `households` + `users` rows.
+- Migrations live in `supabase/migrations/<timestamp>_<feature>.sql`,
+  one per feature. Write a failing SQL/RLS test before each migration
+  (the iron law applies to backend too).
+- Squash-merge into `dev` when green + verified.
+
+### End-of-day ritual
+
+When `dev` is in a known-good "demo-able" state:
+1. `git checkout main && git pull`
+2. `git merge --ff-only dev` (or `--squash` if you want one
+   end-of-day commit per day instead of the day's feature commits)
+3. `git push origin main`
+4. Tag if it's a meaningful checkpoint:
+   `git tag -a v0.x -m "..."  && git push --tags`
+
+### Outstanding decisions blocking forward progress
+
+- **Apple Developer account** — still not provisioned. Keep StoreKit
+  stubbed for F02 + onward. Apple Sign-In on a real device needs the
+  developer account too, but it works on the iOS simulator with
+  Xcode-managed signing.
+- **Move Xcode to `/Applications`?** — quality-of-life cleanup so the
+  `DEVELOPER_DIR=` env-var prefix becomes unnecessary.
+
+### Don't forget
+
+- TDD iron law: every new file → failing test first. Engineer-conduct
+  rules at the top of this file ARE the bar.
+- Branch + squash convention: never commit directly to main again.
+- F01 is the only branch that landed F00 polish commits on main as
+  bootstrap exceptions. From F02 onward, no more main commits.
