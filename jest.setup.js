@@ -1,20 +1,24 @@
 /* eslint-env jest */
-// Mocks that jest-expo doesn't cover.
+// Mocks that jest-expo doesn't cover. Keep this file plain-ish JS:
+// Babel's jest.mock factory hoister flags TypeScript type annotations
+// inside the factory body as out-of-scope references.
 
 // expo-blur — replace BlurView with a plain View so component tests
 // can render without GPU.
 jest.mock('expo-blur', () => {
+  const React = require('react');
   const { View } = require('react-native');
   return {
-    BlurView: (props: object) => View(props as never),
+    BlurView: (props) => React.createElement(View, props),
   };
 });
 
 // @shopify/react-native-skia — stub Canvas + primitives to no-op views
 // so AmbientCanvas + future Skia code can render in jsdom.
 jest.mock('@shopify/react-native-skia', () => {
+  const React = require('react');
   const { View } = require('react-native');
-  const passthrough = (props: object) => View(props as never);
+  const passthrough = (props) => React.createElement(View, props);
   return new Proxy(
     {},
     {

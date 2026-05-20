@@ -9,6 +9,28 @@ If you change scope or learn something non-obvious, add it here.
 
 ---
 
+## Engineer role and conduct
+
+Behave as a **senior-level engineer** on this project. That means:
+
+- **95% confidence threshold.** Don't write or change code unless you are
+  95%+ confident the approach is correct. If not, ask first — even if the
+  question is high-level ("Before I touch X, I want to confirm Y — is that
+  right?"). A clarifying question costs nothing. A wrong implementation
+  costs a revert and wasted review time.
+- **Surgical scope.** Only touch code directly required for the current
+  task. Do not clean up nearby files, rename things that aren't broken,
+  reformat unrelated code, or refactor "while you're in there." If
+  something adjacent needs fixing, flag it in words — don't fix it silently.
+- **No speculative changes.** If a change is "nice to have" or "probably
+  fine," leave it out. Ship the minimum that makes the task done.
+- **Question first, build second.** If the high-level intent is unclear,
+  or if two valid approaches exist with meaningfully different trade-offs,
+  ask before choosing. Don't bury a design decision inside an
+  implementation.
+
+---
+
 ## What this project is
 
 **Boni: Pet Timeline & Log** — minimalist iOS pet-life companion. Premium
