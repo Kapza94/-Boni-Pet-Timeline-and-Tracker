@@ -209,6 +209,28 @@ Red → Green → Refactor:
 5. Refactor only while green.
 6. Repeat.
 
+### Branching + PR workflow
+
+- **main is always shippable.** Only completed features land. Never
+  commit directly to main (the bootstrap commits and one-line `docs:`
+  notes are the historical exception, not the rule).
+- **One branch per FEATURES.md ID.** Naming:
+  - `feat/F##-short-slug` — feature work (`feat/F02-auth`,
+    `feat/F03-onboarding`)
+  - `fix/<slug>` — bug fixes against an already-shipped feature
+  - `chore/<slug>` — tooling, deps, config (`chore/jest-infra`)
+  - `docs/<slug>` — docs-only changes
+  - `refactor/<slug>` — non-behavior code reshaping
+- **Branch off main**, do all the TDD red-green-refactor commits there.
+  Many small commits inside the branch are fine and encouraged — they
+  document the path.
+- **Squash-merge into main** when the feature is green + visually
+  verified on the simulator + the PR has been reviewed. Main gets one
+  `F##: <feature>` commit per branch, so its log reads as a clean
+  changelog and a feature reverts in a single shot.
+- **Delete the branch** after squash-merge. No long-lived branches.
+- **PR title** mirrors the squash commit title: `F##: <feature>`.
+
 ### Per-feature loop
 
 1. Pick the next feature from `FEATURES.md` (top to bottom unless a
@@ -305,3 +327,9 @@ Format: date, one-line insight, optional context.
   100 ≈ 50px blur radius. To hit the 24px/36px design spec, we map
   `blur * 2` as intensity — works empirically; revisit with real
   device side-by-side once the design system ships.
+- **2026-05-20 (F01)** — lucide-react-native v1 doesn't ship a runtime
+  `icons` map (each glyph is a separate named export). LIcon uses
+  `import * as Lucide` and indexes by name string, which pulls the
+  whole set into the bundle. Bundle policy: tolerable while we build;
+  if RN payload becomes a concern, swap LIcon to a hand-curated
+  `iconMap.ts` of the ~30 glyphs Boni actually uses.
