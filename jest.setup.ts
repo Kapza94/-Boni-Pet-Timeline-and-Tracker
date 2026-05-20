@@ -37,3 +37,8 @@ jest.mock('react-native-reanimated', () => {
 jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper', () => ({}), {
   virtual: true,
 });
+
+// @gorhom/bottom-sheet — use the package's bundled mock so the native
+// sheet doesn't try to mount. Our Sheet primitive layers an
+// imperative-ref override on top of this in its own test.
+jest.mock('@gorhom/bottom-sheet', () => require('@gorhom/bottom-sheet/mock'));
