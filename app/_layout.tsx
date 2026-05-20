@@ -25,15 +25,15 @@ const queryClient = new QueryClient({
 
 export default function RootLayout() {
   const [sfLoaded] = useFonts({
-    'SFProDisplay-Regular': require('../assets/fonts/SFPRODISPLAYREGULAR.OTF'),
-    'SFProDisplay-Medium': require('../assets/fonts/SFPRODISPLAYMEDIUM.OTF'),
-    'SFProDisplay-Bold': require('../assets/fonts/SFPRODISPLAYBOLD.OTF'),
-    'SFProDisplay-LightItalic': require('../assets/fonts/SFPRODISPLAYLIGHTITALIC.OTF'),
-    'SFProDisplay-SemiboldItalic': require('../assets/fonts/SFPRODISPLAYSEMIBOLDITALIC.OTF'),
-    'SFProDisplay-HeavyItalic': require('../assets/fonts/SFPRODISPLAYHEAVYITALIC.OTF'),
-    'SFProDisplay-BlackItalic': require('../assets/fonts/SFPRODISPLAYBLACKITALIC.OTF'),
-    'SFProDisplay-ThinItalic': require('../assets/fonts/SFPRODISPLAYTHINITALIC.OTF'),
-    'SFProDisplay-UltralightItalic': require('../assets/fonts/SFPRODISPLAYULTRALIGHTITALIC.OTF'),
+    'SFProDisplay-Regular': require('../assets/fonts/SFPRODISPLAYREGULAR.otf'),
+    'SFProDisplay-Medium': require('../assets/fonts/SFPRODISPLAYMEDIUM.otf'),
+    'SFProDisplay-Bold': require('../assets/fonts/SFPRODISPLAYBOLD.otf'),
+    'SFProDisplay-LightItalic': require('../assets/fonts/SFPRODISPLAYLIGHTITALIC.otf'),
+    'SFProDisplay-SemiboldItalic': require('../assets/fonts/SFPRODISPLAYSEMIBOLDITALIC.otf'),
+    'SFProDisplay-HeavyItalic': require('../assets/fonts/SFPRODISPLAYHEAVYITALIC.otf'),
+    'SFProDisplay-BlackItalic': require('../assets/fonts/SFPRODISPLAYBLACKITALIC.otf'),
+    'SFProDisplay-ThinItalic': require('../assets/fonts/SFPRODISPLAYTHINITALIC.otf'),
+    'SFProDisplay-UltralightItalic': require('../assets/fonts/SFPRODISPLAYULTRALIGHTITALIC.otf'),
   });
 
   const [serifLoaded] = useInstrumentSerif({
