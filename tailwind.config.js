@@ -1,4 +1,10 @@
 /** @type {import('tailwindcss').Config} */
+//
+// NativeWind / Tailwind config. Colors land in production via RN's
+// `@react-native/normalize-colors`, which doesn't parse oklch — see
+// `theme/tokens.ts` for the source-of-truth comments mapping each hex
+// back to its designer-side oklch.
+//
 module.exports = {
   content: [
     './app/**/*.{js,jsx,ts,tsx}',
@@ -11,35 +17,30 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Canvas (deep ambient)
         canvas: {
-          DEFAULT: 'oklch(22% 0.022 270)',
-          deep: 'oklch(15% 0.018 270)',
-          soft: 'oklch(28% 0.020 270)',
+          DEFAULT: '#171a25',
+          deep: '#080b13',
+          soft: '#252933',
         },
-        // Ambient pastel blobs
         blob: {
-          lavender: 'oklch(78% 0.135 290)',
-          rose: 'oklch(80% 0.115 22)',
-          peach: 'oklch(82% 0.105 55)',
-          sky: 'oklch(80% 0.095 230)',
+          lavender: '#b6a8ff',
+          rose: '#ff9f9c',
+          peach: '#f9b281',
+          sky: '#7ac9ef',
         },
-        // Ink on canvas (light)
         ink: {
-          1: 'oklch(98% 0.004 80)',
+          1: '#faf8f5',
           2: 'rgba(255, 255, 255, 0.78)',
           3: 'rgba(255, 255, 255, 0.58)',
           4: 'rgba(255, 255, 255, 0.38)',
           5: 'rgba(255, 255, 255, 0.16)',
         },
-        // Ink on glass (dark)
         'on-glass': {
-          1: 'oklch(22% 0.014 270)',
-          2: 'oklch(40% 0.012 270)',
-          3: 'oklch(58% 0.010 270)',
-          4: 'oklch(75% 0.008 270)',
+          1: '#181a21',
+          2: '#45474e',
+          3: '#787a80',
+          4: '#acaeb3',
         },
-        // Glass fills
         glass: {
           DEFAULT: 'rgba(255, 255, 255, 0.40)',
           strong: 'rgba(255, 255, 255, 0.62)',
@@ -49,26 +50,23 @@ module.exports = {
           DEFAULT: 'rgba(255, 255, 255, 0.55)',
           strong: 'rgba(255, 255, 255, 0.72)',
         },
-        // Emerald (active/success)
         emerald: {
-          300: 'oklch(86% 0.090 165)',
-          400: 'oklch(80% 0.130 165)',
-          500: 'oklch(72% 0.155 165)',
-          600: 'oklch(62% 0.150 165)',
-          glow: 'oklch(80% 0.14 165 / 0.55)',
+          300: '#97e4c2',
+          400: '#5ed8a9',
+          500: '#00c28c',
+          600: '#00a16f',
+          glow: 'rgba(81, 218, 167, 0.55)',
         },
-        // Honey (warmth)
         honey: {
-          300: 'oklch(83.5% 0.110 68)',
-          400: 'oklch(76.5% 0.135 65)',
-          500: 'oklch(70.0% 0.150 60)',
-          600: 'oklch(62.0% 0.145 55)',
+          300: '#f9bb78',
+          400: '#ed9f4c',
+          500: '#e18528',
+          600: '#c76a18',
         },
-        // Ambient semantic
         ambient: {
-          warn: 'oklch(82% 0.13 70 / 0.55)',
-          attention: 'oklch(80% 0.14 25 / 0.55)',
-          info: 'oklch(80% 0.12 230 / 0.55)',
+          warn: 'rgba(250, 180, 95, 0.55)',
+          attention: 'rgba(255, 152, 144, 0.55)',
+          info: 'rgba(96, 204, 252, 0.55)',
         },
       },
       fontFamily: {
