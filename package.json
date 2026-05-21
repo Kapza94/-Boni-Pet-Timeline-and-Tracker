@@ -12,7 +12,11 @@
     "format": "prettier --write .",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:ci": "jest --ci --maxWorkers=2"
+    "test:ci": "jest --ci --maxWorkers=2",
+    "db:reset": "supabase db reset --local",
+    "db:test": "supabase test db --local",
+    "mail": "open http://127.0.0.1:54324",
+    "studio": "open http://127.0.0.1:54323"
   },
   "jest": {
     "preset": "jest-expo",
