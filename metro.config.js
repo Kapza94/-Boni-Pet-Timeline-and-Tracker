@@ -15,17 +15,21 @@ config.resolver.sourceExts = config.resolver.sourceExts.filter(
   (ext) => !['otf', 'ttf', 'woff', 'woff2'].includes(ext)
 );
 
-// Block test files from the Metro bundle. Expo Router treats every .tsx
-// under app/ as a route, including *.test.tsx, which pulls
-// @testing-library/react-native into the device bundle and trips on its
-// node 'console' import. Jest uses its own resolver so this exclusion
-// is bundler-only.
+// Block test files + jest-only libraries from the Metro bundle. Expo
+// Router treats every .tsx under app/ as a route, including
+// *.test.tsx, which would pull @testing-library/react-native into the
+// device bundle and trip on its node 'console' import. We also block
+// the testing libraries themselves as a belt-and-suspenders guard in
+// case any prod import sneaks in. Jest uses its own resolver so these
+// exclusions are bundler-only.
+const exclusions = [
+  /.*\.(test|spec)\.(t|j)sx?$/,
+  /node_modules\/@testing-library\/.*/,
+  /node_modules\/jest(-[a-z-]+)?\/.*/,
+];
 const existing = config.resolver.blockList;
-const testPattern = /.*\.(test|spec)\.(t|j)sx?$/;
 config.resolver.blockList = existing
-  ? Array.isArray(existing)
-    ? existing.concat(testPattern)
-    : [existing, testPattern]
-  : testPattern;
+  ? (Array.isArray(existing) ? existing : [existing]).concat(exclusions)
+  : exclusions;
 
 module.exports = withNativeWind(config, { input: './global.css' });

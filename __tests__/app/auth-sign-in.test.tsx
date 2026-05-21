@@ -19,7 +19,7 @@ jest.mock('expo-router', () => ({
 }));
 
 import { signInWithEmail, signUpWithEmail } from '../../lib/auth';
-import SignIn from './sign-in';
+import SignIn from '../../app/(auth)/sign-in';
 
 const signIn = signInWithEmail as jest.Mock;
 const signUp = signUpWithEmail as jest.Mock;

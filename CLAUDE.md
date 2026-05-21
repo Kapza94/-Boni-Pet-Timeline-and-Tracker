@@ -176,6 +176,16 @@ Supportive, brief, never clinical, never alarmist.
   Settings flips `households.subscription_tier` via the stub RPC so
   premium UIs can be QA'd before real purchases work. Production
   builds must reject the stub endpoint.
+- **TODO — Sign in with Apple is deferred.** Blocked on the same
+  Apple Developer account. The Apple button on `(auth)/sign-in.tsx`
+  stays disabled until then. When the account exists:
+  (1) enable Sign in with Apple capability in the App ID,
+  (2) install `expo-apple-authentication`,
+  (3) build a `useAppleSignIn` hook mirroring `useGoogleSignIn`
+      (request identityToken + nonce, exchange via
+      `supabase.auth.signInWithIdToken({ provider: 'apple' })`),
+  (4) enable `[auth.external.apple]` in `supabase/config.toml`,
+  (5) flip the button `disabled` flag in the sign-in screen.
 - **Memory book is PDF, not physical.** Original brief had a $59
   hardcover; replaced with a downloadable PDF (user-decided
   2026-05-20). Server compiles, returns a 7-day signed URL, iOS share

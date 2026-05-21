@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react-native';
 
-jest.mock('../hooks/useSession', () => ({
+jest.mock('../../hooks/useSession', () => ({
   useSession: jest.fn(),
 }));
 
@@ -11,8 +11,8 @@ jest.mock('expo-router', () => {
   };
 });
 
-import { useSession } from '../hooks/useSession';
-import Index from './index';
+import { useSession } from '../../hooks/useSession';
+import Index from '../../app/index';
 
 const session = useSession as jest.Mock;
 
