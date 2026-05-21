@@ -333,3 +333,17 @@ Format: date, one-line insight, optional context.
   whole set into the bundle. Bundle policy: tolerable while we build;
   if RN payload becomes a concern, swap LIcon to a hand-curated
   `iconMap.ts` of the ~30 glyphs Boni actually uses.
+- **2026-05-21 (F01)** — Lucide name strings are PascalCase
+  (`"Settings"`, `"PawPrint"`, `"CircleCheckBig"`), not kebab-case as
+  the lucide.dev site implies. Mismatched names hit the LIcon dev
+  warning and silently render nothing.
+- **2026-05-21 (F01)** — jest.mock factories can't safely `require`
+  `react-native` directly — babel's nativewind interop pulls
+  `_ReactNativeCSSInterop` into scope and trips the "out-of-scope
+  variables" rule when the mock is hoisted. Mocks for visual-only
+  things (BlurView, Skia primitives) return `null` instead.
+- **2026-05-21 (F01)** — Sheet shell is RN's `Modal` + a styled View,
+  not `@gorhom/bottom-sheet` (yet). The FEATURES.md spec calls for
+  gorhom, but the visual shell + backdrop-to-dismiss is all F01
+  needs; drag-to-dismiss will swap gorhom in behind the same public
+  API in F06 (Quick Log) where the gesture actually matters.
