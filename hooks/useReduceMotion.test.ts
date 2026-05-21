@@ -30,7 +30,7 @@ describe('useReduceMotion', () => {
     jest
       .spyOn(AccessibilityInfo, 'addEventListener')
       .mockImplementation((_evt: string, handler) => {
-        capturedHandler = handler as (v: boolean) => void;
+        capturedHandler = handler as unknown as (v: boolean) => void;
         return listener as never;
       });
 
