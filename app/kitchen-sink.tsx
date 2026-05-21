@@ -73,15 +73,15 @@ export default function KitchenSink() {
           <Section title="Avatars">
             <Glass style={{ padding: spacing[4], gap: spacing[3] }}>
               <View style={{ flexDirection: 'row', gap: spacing[4] }}>
-                <Avatar initials="MK" color="oklch(88% 0.10 290)" size={44} />
-                <Avatar initials="SC" color="oklch(88% 0.10 25)" size={44} active />
-                <Avatar initials="JT" color="oklch(88% 0.10 230)" size={44} />
+                <Avatar initials="MK" color="#d6cdff" size={44} />
+                <Avatar initials="SC" color="#ffbeb6" size={44} active />
+                <Avatar initials="JT" color="#8fe4ff" size={44} />
               </View>
               <AvatarStack
                 people={[
-                  { initials: 'SC', color: 'oklch(88% 0.10 290)' },
-                  { initials: 'JT', color: 'oklch(88% 0.10 25)' },
-                  { initials: 'RM', color: 'oklch(88% 0.10 230)', active: true },
+                  { initials: 'SC', color: '#d6cdff' },
+                  { initials: 'JT', color: '#ffbeb6' },
+                  { initials: 'RM', color: '#8fe4ff', active: true },
                 ]}
               />
             </Glass>

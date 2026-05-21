@@ -7,7 +7,7 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarStyle: { backgroundColor: 'oklch(15% 0.018 270)' },
+        tabBarStyle: { backgroundColor: '#080b13' },
       }}
     >
       <Tabs.Screen name="index" options={{ title: 'Today' }} />

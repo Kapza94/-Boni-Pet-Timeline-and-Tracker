@@ -2,9 +2,9 @@ import { render } from '@testing-library/react-native';
 import { AvatarStack } from './AvatarStack';
 
 const PEOPLE = [
-  { initials: 'SC', color: 'oklch(88% 0.10 290)' },
-  { initials: 'JT', color: 'oklch(88% 0.10 25)' },
-  { initials: 'RM', color: 'oklch(88% 0.10 230)', active: true },
+  { initials: 'SC', color: '#d6cdff' },
+  { initials: 'JT', color: '#ffbeb6' },
+  { initials: 'RM', color: '#8fe4ff', active: true },
 ];
 
 describe('AvatarStack', () => {
@@ -38,7 +38,7 @@ describe('AvatarStack', () => {
       node = node.parent;
       style = flatten(node?.props.style);
     }
-    expect(style.borderColor).toBe('oklch(72% 0.155 165)');
+    expect(style.borderColor).toBe('#00c28c');
   });
 
   it('passes the size prop down to each avatar (via initials font scale)', () => {

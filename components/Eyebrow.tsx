@@ -1,5 +1,6 @@
 import { Text, type TextProps } from 'react-native';
 import { text } from '../theme/typography';
+import { colors } from '../theme/tokens';
 
 type EyebrowProps = TextProps & {
   children?: React.ReactNode;
@@ -18,7 +19,7 @@ export function Eyebrow({ children, style, onGlass = false, ...rest }: EyebrowPr
   return (
     <Text
       {...rest}
-      style={[text.eyebrow, onGlass && { color: 'oklch(58% 0.010 270)' }, style]}
+      style={[text.eyebrow, onGlass && { color: colors.onGlass[3] }, style]}
     >
       {content}
     </Text>

@@ -22,13 +22,13 @@ describe('Avatar', () => {
 
   it('applies the color prop as the background', () => {
     const { getByTestId } = render(
-      <Avatar initials="JT" testID="av" color="oklch(88% 0.10 290)" />
+      <Avatar initials="JT" testID="av" color="#d6cdff" />
     );
     const node = getByTestId('av');
     const style = Array.isArray(node.props.style)
       ? Object.assign({}, ...node.props.style.flat().filter(Boolean))
       : node.props.style ?? {};
-    expect(style.backgroundColor).toBe('oklch(88% 0.10 290)');
+    expect(style.backgroundColor).toBe('#d6cdff');
   });
 
   it('falls back to a neutral background when no color is provided', () => {
@@ -57,7 +57,7 @@ describe('Avatar', () => {
     const style = Array.isArray(node.props.style)
       ? Object.assign({}, ...node.props.style.flat().filter(Boolean))
       : node.props.style ?? {};
-    expect(style.borderColor).toBe('oklch(72% 0.155 165)');
+    expect(style.borderColor).toBe('#00c28c');
     expect(style.borderWidth).toBe(2);
   });
 

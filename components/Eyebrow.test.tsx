@@ -35,6 +35,6 @@ describe('Eyebrow', () => {
     const style = Array.isArray(node.props.style)
       ? Object.assign({}, ...node.props.style.flat().filter(Boolean))
       : node.props.style ?? {};
-    expect(style.color).toBe('oklch(58% 0.010 270)');
+    expect(style.color).toBe('#787a80');
   });
 });
