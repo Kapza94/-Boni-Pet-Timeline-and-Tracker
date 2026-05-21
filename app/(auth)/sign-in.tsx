@@ -9,6 +9,7 @@ import { Eyebrow } from '../../components/Eyebrow';
 import { SerifTitle } from '../../components/SerifTitle';
 import { LIcon } from '../../components/icons/LIcon';
 import { signInWithEmail, signUpWithEmail } from '../../lib/auth';
+import { useGoogleSignIn } from '../../hooks/useGoogleSignIn';
 import { text } from '../../theme/typography';
 import { colors, radii, spacing } from '../../theme/tokens';
 
@@ -24,6 +25,10 @@ export default function SignIn() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  const google = useGoogleSignIn();
+  // Surface Google errors through the same banner the email path uses.
+  const displayedError = error ?? google.errorMessage;
 
   const submit = async () => {
     setError(null);
@@ -77,8 +82,9 @@ export default function SignIn() {
               <ProviderButton
                 testID="continue-with-google"
                 icon="Globe"
-                label="Continue with Google"
-                disabled
+                label={google.status === 'in-flight' ? 'Working…' : 'Continue with Google'}
+                onPress={google.promptGoogleSignIn}
+                disabled={!google.isReady || google.status === 'in-flight'}
               />
               <ProviderButton
                 testID="continue-with-email"
@@ -106,9 +112,11 @@ export default function SignIn() {
             />
           )}
 
-          {error ? (
+          {displayedError ? (
             <Glass strength="strong" radius="md" style={{ padding: spacing[3] }}>
-              <Text style={[text.bodyOnGlass, { textAlign: 'center' }]}>{error}</Text>
+              <Text style={[text.bodyOnGlass, { textAlign: 'center' }]}>
+                {displayedError}
+              </Text>
             </Glass>
           ) : null}
         </ScrollView>

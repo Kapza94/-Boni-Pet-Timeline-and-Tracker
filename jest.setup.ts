@@ -38,3 +38,11 @@ jest.mock('react-native-reanimated', () => {
 jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper', () => ({}), {
   virtual: true,
 });
+
+// AsyncStorage — the package ships an official Jest mock; without it
+// importing lib/supabase from a component test trips the "NativeModule:
+// AsyncStorage is null" error.
+jest.mock(
+  '@react-native-async-storage/async-storage',
+  () => require('@react-native-async-storage/async-storage/jest/async-storage-mock')
+);

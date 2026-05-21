@@ -27,6 +27,7 @@
       "node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|nativewind|react-native-css-interop|@gorhom/.*|lucide-react-native|@shopify/react-native-skia))"
     ],
     "moduleNameMapper": {
+      "^console$": "<rootDir>/__mocks__/consoleMock.js",
       "\\.(otf|ttf|png|jpg|jpeg|svg)$": "<rootDir>/__mocks__/fileMock.js"
     }
   },

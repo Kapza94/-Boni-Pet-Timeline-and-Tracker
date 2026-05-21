@@ -5,6 +5,15 @@ jest.mock('../../lib/auth', () => ({
   signUpWithEmail: jest.fn(),
 }));
 
+jest.mock('../../hooks/useGoogleSignIn', () => ({
+  useGoogleSignIn: () => ({
+    isReady: false,
+    status: 'idle',
+    errorMessage: null,
+    promptGoogleSignIn: jest.fn(),
+  }),
+}));
+
 jest.mock('expo-router', () => ({
   useRouter: () => ({ replace: jest.fn(), push: jest.fn() }),
 }));
