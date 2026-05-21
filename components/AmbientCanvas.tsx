@@ -1,11 +1,6 @@
 import { useEffect } from 'react';
-import { StyleSheet, useWindowDimensions, AccessibilityInfo } from 'react-native';
-import {
-  Canvas,
-  Circle,
-  Blur,
-  Group,
-} from '@shopify/react-native-skia';
+import { StyleSheet, useWindowDimensions } from 'react-native';
+import { Canvas, Circle, Blur, Group } from '@shopify/react-native-skia';
 import {
   useSharedValue,
   withRepeat,
@@ -14,32 +9,35 @@ import {
   cancelAnimation,
 } from 'react-native-reanimated';
 import { colors } from '../theme/tokens';
+import { useReduceMotion } from '../hooks/useReduceMotion';
 
 /**
  * AmbientCanvas — the dark canvas with four soft pastel blobs that peek
  * through every Glass surface above it. Sits as the bottom-most layer of
- * any screen. Blobs drift slowly (60s+ cycles) when allowed by
- * Reduce Motion.
+ * any screen. Blobs drift slowly (60s+ cycles); the drift stays parked
+ * whenever Reduce Motion is on (and starts/stops live as the user
+ * flips the OS setting).
  */
 export function AmbientCanvas() {
   const { width, height } = useWindowDimensions();
+  const reduceMotion = useReduceMotion();
   const drift = useSharedValue(0);
 
   useEffect(() => {
-    let mounted = true;
-    AccessibilityInfo.isReduceMotionEnabled().then((reduce) => {
-      if (!mounted || reduce) return;
-      drift.value = withRepeat(
-        withTiming(1, { duration: 60_000, easing: Easing.inOut(Easing.cubic) }),
-        -1,
-        true
-      );
-    });
+    if (reduceMotion) {
+      cancelAnimation(drift);
+      drift.value = 0;
+      return;
+    }
+    drift.value = withRepeat(
+      withTiming(1, { duration: 60_000, easing: Easing.inOut(Easing.cubic) }),
+      -1,
+      true
+    );
     return () => {
-      mounted = false;
       cancelAnimation(drift);
     };
-  }, [drift]);
+  }, [reduceMotion, drift]);
 
   const blobRadius = Math.max(width, height) * 0.45;
 
