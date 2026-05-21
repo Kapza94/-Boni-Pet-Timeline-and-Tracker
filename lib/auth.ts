@@ -1,46 +1,37 @@
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from './supabase';
 
-type EmailPasswordPayload = {
-  email: string;
-  password: string;
-};
-
-type SignUpPayload = EmailPasswordPayload & {
-  /** Display name. Forwarded into raw_user_meta_data so the
-   *  on_auth_user_created trigger can derive name + initials. */
-  name: string;
-};
-
-type AuthResult = {
+type OtpResult = {
   session: Session | null;
 };
 
 /**
- * Email/password sign-in. Throws on Supabase error so callers can
- * funnel everything through a single try/catch in the screen layer.
+ * requestEmailOtp — kicks off the passwordless email flow: Supabase
+ * sends a 6-digit code (and a magic link, which we ignore on iOS) to
+ * the address. shouldCreateUser=true means a brand-new email is
+ * auto-provisioned, so sign-up + sign-in collapse into one path.
  */
-export async function signInWithEmail(
-  payload: EmailPasswordPayload
-): Promise<AuthResult> {
-  const { data, error } = await supabase.auth.signInWithPassword(payload);
+export async function requestEmailOtp(email: string): Promise<void> {
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: { shouldCreateUser: true },
+  });
   if (error) throw new Error(error.message);
-  return { session: data?.session ?? null };
 }
 
 /**
- * Email/password sign-up. The `name` lands in user metadata where the
- * on_auth_user_created trigger reads it; this is also where Apple's
- * full-name payload will flow once Apple Sign-In ships.
+ * verifyEmailOtp — exchanges the 6-digit code for a session. On
+ * success, on_auth_user_created has already (or will, for new
+ * accounts) provisioned the household + public.users row.
  */
-export async function signUpWithEmail(
-  payload: SignUpPayload
-): Promise<AuthResult> {
-  const { email, password, name } = payload;
-  const { data, error } = await supabase.auth.signUp({
+export async function verifyEmailOtp(
+  email: string,
+  token: string
+): Promise<OtpResult> {
+  const { data, error } = await supabase.auth.verifyOtp({
     email,
-    password,
-    options: { data: { name } },
+    token,
+    type: 'email',
   });
   if (error) throw new Error(error.message);
   return { session: data?.session ?? null };

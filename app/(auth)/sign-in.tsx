@@ -8,37 +8,42 @@ import { Press } from '../../components/Press';
 import { Eyebrow } from '../../components/Eyebrow';
 import { SerifTitle } from '../../components/SerifTitle';
 import { LIcon } from '../../components/icons/LIcon';
-import { signInWithEmail, signUpWithEmail } from '../../lib/auth';
+import { requestEmailOtp, verifyEmailOtp } from '../../lib/auth';
 import { useGoogleSignIn } from '../../hooks/useGoogleSignIn';
 import { text } from '../../theme/typography';
 import { colors, radii, spacing } from '../../theme/tokens';
 
-type Mode = 'pick' | 'email';
-type EmailIntent = 'sign-in' | 'sign-up';
+type Phase = 'pick' | 'email-request' | 'email-verify';
 
 export default function SignIn() {
   const router = useRouter();
-  const [mode, setMode] = useState<Mode>('pick');
-  const [intent, setIntent] = useState<EmailIntent>('sign-in');
-  const [name, setName] = useState('');
+  const [phase, setPhase] = useState<Phase>('pick');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const google = useGoogleSignIn();
-  // Surface Google errors through the same banner the email path uses.
   const displayedError = error ?? google.errorMessage;
 
-  const submit = async () => {
+  const sendCode = async () => {
     setError(null);
     setSubmitting(true);
     try {
-      if (intent === 'sign-up') {
-        await signUpWithEmail({ email, password, name });
-      } else {
-        await signInWithEmail({ email, password });
-      }
+      await requestEmailOtp(email.trim());
+      setPhase('email-verify');
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const verifyCode = async () => {
+    setError(null);
+    setSubmitting(true);
+    try {
+      await verifyEmailOtp(email.trim(), code.trim());
       router.replace('/');
     } catch (e) {
       setError((e as Error).message);
@@ -66,12 +71,13 @@ export default function SignIn() {
               Every day, every memory.
             </SerifTitle>
             <Text style={text.body}>
-              Sign in to keep your pet&apos;s timeline in sync across every
-              device in your household.
+              {phase === 'email-verify'
+                ? `We sent a 6-digit code to ${email}. Pop it in below.`
+                : "Sign in to keep your pet's timeline in sync across every device in your household."}
             </Text>
           </View>
 
-          {mode === 'pick' ? (
+          {phase === 'pick' ? (
             <View style={{ gap: spacing[3] }}>
               <ProviderButton
                 testID="continue-with-apple"
@@ -90,27 +96,41 @@ export default function SignIn() {
                 testID="continue-with-email"
                 icon="Mail"
                 label="Continue with email"
-                onPress={() => setMode('email')}
+                onPress={() => setPhase('email-request')}
               />
             </View>
-          ) : (
-            <EmailForm
-              intent={intent}
-              onIntentChange={setIntent}
-              name={name}
-              onNameChange={setName}
+          ) : null}
+
+          {phase === 'email-request' ? (
+            <EmailRequestForm
               email={email}
               onEmailChange={setEmail}
-              password={password}
-              onPasswordChange={setPassword}
-              onSubmit={submit}
-              submitting={submitting}
+              onSendCode={sendCode}
               onBack={() => {
-                setMode('pick');
+                setPhase('pick');
                 setError(null);
               }}
+              submitting={submitting}
             />
-          )}
+          ) : null}
+
+          {phase === 'email-verify' ? (
+            <EmailVerifyForm
+              code={code}
+              onCodeChange={setCode}
+              onVerify={verifyCode}
+              onResend={async () => {
+                setCode('');
+                await sendCode();
+              }}
+              onChangeEmail={() => {
+                setPhase('email-request');
+                setCode('');
+                setError(null);
+              }}
+              submitting={submitting}
+            />
+          ) : null}
 
           {displayedError ? (
             <Glass strength="strong" radius="md" style={{ padding: spacing[3] }}>
@@ -161,58 +181,17 @@ function ProviderButton({
   );
 }
 
-function EmailForm(props: {
-  intent: EmailIntent;
-  onIntentChange: (i: EmailIntent) => void;
-  name: string;
-  onNameChange: (v: string) => void;
+function EmailRequestForm(props: {
   email: string;
   onEmailChange: (v: string) => void;
-  password: string;
-  onPasswordChange: (v: string) => void;
-  onSubmit: () => void;
+  onSendCode: () => void;
   onBack: () => void;
   submitting: boolean;
 }) {
-  const {
-    intent,
-    onIntentChange,
-    name,
-    onNameChange,
-    email,
-    onEmailChange,
-    password,
-    onPasswordChange,
-    onSubmit,
-    onBack,
-    submitting,
-  } = props;
+  const { email, onEmailChange, onSendCode, onBack, submitting } = props;
   return (
     <View style={{ gap: spacing[3] }}>
       <Glass strength="strong" radius="lg" style={{ padding: spacing[4], gap: spacing[3] }}>
-        <View style={{ flexDirection: 'row', gap: spacing[2] }}>
-          <SegmentButton
-            label="Sign in"
-            selected={intent === 'sign-in'}
-            onPress={() => onIntentChange('sign-in')}
-          />
-          <SegmentButton
-            label="Create account"
-            selected={intent === 'sign-up'}
-            onPress={() => onIntentChange('sign-up')}
-          />
-        </View>
-
-        {intent === 'sign-up' ? (
-          <Field
-            testID="name-input"
-            label="Your name"
-            value={name}
-            onChange={onNameChange}
-            autoCapitalize="words"
-          />
-        ) : null}
-
         <Field
           testID="email-input"
           label="Email"
@@ -221,36 +200,13 @@ function EmailForm(props: {
           autoCapitalize="none"
           keyboardType="email-address"
         />
-        <Field
-          testID="password-input"
-          label="Password"
-          value={password}
-          onChange={onPasswordChange}
-          secureTextEntry
+        <PrimaryButton
+          testID="send-code"
+          label={submitting ? 'Sending…' : 'Send 6-digit code'}
+          onPress={onSendCode}
+          disabled={submitting || !email.trim()}
         />
-
-        <Press testID="email-submit" onPress={onSubmit} disabled={submitting}>
-          <Glass
-            radius="pill"
-            strength="strong"
-            style={{
-              paddingVertical: spacing[3],
-              paddingHorizontal: spacing[4],
-              backgroundColor: colors.emerald[500],
-              borderColor: colors.glassBorder.strong,
-            }}
-          >
-            <Text style={[text.row, { color: '#fff', textAlign: 'center' }]}>
-              {submitting
-                ? 'Working…'
-                : intent === 'sign-up'
-                ? 'Create account'
-                : 'Sign in'}
-            </Text>
-          </Glass>
-        </Press>
       </Glass>
-
       <Press onPress={onBack}>
         <Text style={[text.meta, { textAlign: 'center' }]}>Use a different method</Text>
       </Press>
@@ -258,36 +214,71 @@ function EmailForm(props: {
   );
 }
 
-function SegmentButton({
+function EmailVerifyForm(props: {
+  code: string;
+  onCodeChange: (v: string) => void;
+  onVerify: () => void;
+  onResend: () => void;
+  onChangeEmail: () => void;
+  submitting: boolean;
+}) {
+  const { code, onCodeChange, onVerify, onResend, onChangeEmail, submitting } = props;
+  return (
+    <View style={{ gap: spacing[3] }}>
+      <Glass strength="strong" radius="lg" style={{ padding: spacing[4], gap: spacing[3] }}>
+        <Field
+          testID="code-input"
+          label="6-digit code"
+          value={code}
+          onChange={onCodeChange}
+          keyboardType="number-pad"
+          autoCapitalize="none"
+        />
+        <PrimaryButton
+          testID="verify-code"
+          label={submitting ? 'Verifying…' : 'Verify code'}
+          onPress={onVerify}
+          disabled={submitting || code.trim().length < 6}
+        />
+      </Glass>
+      <View style={{ flexDirection: 'row', justifyContent: 'center', gap: spacing[4] }}>
+        <Press onPress={onResend}>
+          <Text style={text.meta}>Resend code</Text>
+        </Press>
+        <Press onPress={onChangeEmail}>
+          <Text style={text.meta}>Change email</Text>
+        </Press>
+      </View>
+    </View>
+  );
+}
+
+function PrimaryButton({
+  testID,
   label,
-  selected,
   onPress,
+  disabled,
 }: {
+  testID: string;
   label: string;
-  selected: boolean;
   onPress: () => void;
+  disabled?: boolean;
 }) {
   return (
-    <Press onPress={onPress} style={{ flex: 1 }}>
-      <View
+    <Press testID={testID} onPress={onPress} disabled={disabled}>
+      <Glass
+        radius="pill"
+        strength="strong"
         style={{
-          paddingVertical: spacing[2],
-          borderRadius: radii.pill,
-          backgroundColor: selected ? colors.glass.strong : 'transparent',
-          borderWidth: 1,
-          borderColor: selected ? colors.glassBorder.DEFAULT : 'transparent',
-          alignItems: 'center',
+          paddingVertical: spacing[3],
+          paddingHorizontal: spacing[4],
+          backgroundColor: colors.emerald[500],
+          borderColor: colors.glassBorder.strong,
+          opacity: disabled ? 0.4 : 1,
         }}
       >
-        <Text
-          style={[
-            text.meta,
-            { color: selected ? colors.onGlass[1] : colors.onGlass[3] },
-          ]}
-        >
-          {label}
-        </Text>
-      </View>
+        <Text style={[text.row, { color: '#fff', textAlign: 'center' }]}>{label}</Text>
+      </Glass>
     </Press>
   );
 }
@@ -306,7 +297,7 @@ function Field({
   value: string;
   onChange: (v: string) => void;
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
-  keyboardType?: 'default' | 'email-address';
+  keyboardType?: 'default' | 'email-address' | 'number-pad';
   secureTextEntry?: boolean;
 }) {
   return (

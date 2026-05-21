@@ -1,8 +1,8 @@
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 jest.mock('../../lib/auth', () => ({
-  signInWithEmail: jest.fn(),
-  signUpWithEmail: jest.fn(),
+  requestEmailOtp: jest.fn(),
+  verifyEmailOtp: jest.fn(),
 }));
 
 jest.mock('../../hooks/useGoogleSignIn', () => ({
@@ -18,65 +18,69 @@ jest.mock('expo-router', () => ({
   useRouter: () => ({ replace: jest.fn(), push: jest.fn() }),
 }));
 
-import { signInWithEmail, signUpWithEmail } from '../../lib/auth';
+import { requestEmailOtp, verifyEmailOtp } from '../../lib/auth';
 import SignIn from '../../app/(auth)/sign-in';
 
-const signIn = signInWithEmail as jest.Mock;
-const signUp = signUpWithEmail as jest.Mock;
+const request = requestEmailOtp as jest.Mock;
+const verify = verifyEmailOtp as jest.Mock;
 
 beforeEach(() => {
   jest.clearAllMocks();
 });
 
-describe('SignIn screen — email path', () => {
-  it('reveals the email form when "Continue with email" is pressed', () => {
+describe('SignIn screen — passwordless OTP', () => {
+  it('reveals the email input when "Continue with email" is pressed', () => {
     const { queryByTestId, getByTestId } = render(<SignIn />);
     expect(queryByTestId('email-input')).toBeNull();
     fireEvent.press(getByTestId('continue-with-email'));
     expect(getByTestId('email-input')).toBeTruthy();
-    expect(getByTestId('password-input')).toBeTruthy();
+    expect(getByTestId('send-code')).toBeTruthy();
   });
 
-  it('calls signInWithEmail with the entered credentials', async () => {
-    signIn.mockResolvedValue({ session: { access_token: 't' } });
-    const { getByTestId } = render(<SignIn />);
+  it('sends the OTP and advances to the code entry step', async () => {
+    request.mockResolvedValue(undefined);
+    const { getByTestId, findByTestId } = render(<SignIn />);
     fireEvent.press(getByTestId('continue-with-email'));
     fireEvent.changeText(getByTestId('email-input'), 'a@b.com');
-    fireEvent.changeText(getByTestId('password-input'), 'hunter22');
-    fireEvent.press(getByTestId('email-submit'));
+    fireEvent.press(getByTestId('send-code'));
+    await waitFor(() => expect(request).toHaveBeenCalledWith('a@b.com'));
+    expect(await findByTestId('code-input')).toBeTruthy();
+  });
+
+  it('verifies the entered code via verifyEmailOtp', async () => {
+    request.mockResolvedValue(undefined);
+    verify.mockResolvedValue({ session: { access_token: 't' } });
+    const { getByTestId, findByTestId } = render(<SignIn />);
+    fireEvent.press(getByTestId('continue-with-email'));
+    fireEvent.changeText(getByTestId('email-input'), 'a@b.com');
+    fireEvent.press(getByTestId('send-code'));
+    await findByTestId('code-input');
+    fireEvent.changeText(getByTestId('code-input'), '123456');
+    fireEvent.press(getByTestId('verify-code'));
     await waitFor(() =>
-      expect(signIn).toHaveBeenCalledWith({
-        email: 'a@b.com',
-        password: 'hunter22',
-      })
+      expect(verify).toHaveBeenCalledWith('a@b.com', '123456')
     );
   });
 
-  it('switches to sign-up mode and calls signUpWithEmail with name', async () => {
-    signUp.mockResolvedValue({ session: null });
-    const { getByTestId, getByText } = render(<SignIn />);
+  it('shows the OTP error message when verification fails', async () => {
+    request.mockResolvedValue(undefined);
+    verify.mockRejectedValue(new Error('Token has expired or is invalid'));
+    const { getByTestId, findByTestId, findByText } = render(<SignIn />);
     fireEvent.press(getByTestId('continue-with-email'));
-    fireEvent.press(getByText(/create account/i));
-    fireEvent.changeText(getByTestId('name-input'), 'Mochi');
     fireEvent.changeText(getByTestId('email-input'), 'a@b.com');
-    fireEvent.changeText(getByTestId('password-input'), 'hunter22');
-    fireEvent.press(getByTestId('email-submit'));
-    await waitFor(() =>
-      expect(signUp).toHaveBeenCalledWith({
-        email: 'a@b.com',
-        password: 'hunter22',
-        name: 'Mochi',
-      })
-    );
+    fireEvent.press(getByTestId('send-code'));
+    await findByTestId('code-input');
+    fireEvent.changeText(getByTestId('code-input'), '000000');
+    fireEvent.press(getByTestId('verify-code'));
+    expect(await findByText('Token has expired or is invalid')).toBeTruthy();
   });
 
-  it('renders the auth-lib error message on submit failure', async () => {
-    signIn.mockRejectedValue(new Error('Invalid login credentials'));
+  it('surfaces a send-OTP error from requestEmailOtp', async () => {
+    request.mockRejectedValue(new Error('Email rate limit exceeded'));
     const { getByTestId, findByText } = render(<SignIn />);
     fireEvent.press(getByTestId('continue-with-email'));
     fireEvent.changeText(getByTestId('email-input'), 'a@b.com');
-    fireEvent.changeText(getByTestId('password-input'), 'wrong');
-    fireEvent.press(getByTestId('email-submit'));
-    expect(await findByText('Invalid login credentials')).toBeTruthy();
+    fireEvent.press(getByTestId('send-code'));
+    expect(await findByText('Email rate limit exceeded')).toBeTruthy();
   });
 });

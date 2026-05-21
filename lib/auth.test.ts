@@ -1,26 +1,21 @@
 jest.mock('./supabase', () => {
-  const signInWithPassword = jest.fn();
-  const signUp = jest.fn();
+  const signInWithOtp = jest.fn();
+  const verifyOtp = jest.fn();
   const signOut = jest.fn();
   const getSession = jest.fn();
   return {
     supabase: {
-      auth: { signInWithPassword, signUp, signOut, getSession },
+      auth: { signInWithOtp, verifyOtp, signOut, getSession },
     },
   };
 });
 
 import { supabase } from './supabase';
-import {
-  signInWithEmail,
-  signUpWithEmail,
-  signOut,
-  getSession,
-} from './auth';
+import { requestEmailOtp, verifyEmailOtp, signOut, getSession } from './auth';
 
 const mocked = supabase.auth as unknown as {
-  signInWithPassword: jest.Mock;
-  signUp: jest.Mock;
+  signInWithOtp: jest.Mock;
+  verifyOtp: jest.Mock;
   signOut: jest.Mock;
   getSession: jest.Mock;
 };
@@ -29,65 +24,55 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
-describe('signInWithEmail', () => {
-  it('passes email + password to supabase and returns the session', async () => {
-    mocked.signInWithPassword.mockResolvedValue({
-      data: { user: { id: 'u1' }, session: { access_token: 'tok' } },
-      error: null,
-    });
-    const result = await signInWithEmail({
+describe('requestEmailOtp', () => {
+  it('asks Supabase to send a code, auto-creating the user when needed', async () => {
+    mocked.signInWithOtp.mockResolvedValue({ data: {}, error: null });
+    await requestEmailOtp('a@b.com');
+    expect(mocked.signInWithOtp).toHaveBeenCalledWith({
       email: 'a@b.com',
-      password: 'hunter22',
+      options: { shouldCreateUser: true },
     });
-    expect(mocked.signInWithPassword).toHaveBeenCalledWith({
-      email: 'a@b.com',
-      password: 'hunter22',
-    });
-    expect(result.session).toEqual({ access_token: 'tok' });
   });
 
-  it('throws when supabase reports an error', async () => {
-    mocked.signInWithPassword.mockResolvedValue({
+  it('throws when Supabase reports an error', async () => {
+    mocked.signInWithOtp.mockResolvedValue({
       data: null,
-      error: { message: 'Invalid login credentials' },
+      error: { message: 'Email rate limit exceeded' },
     });
-    await expect(
-      signInWithEmail({ email: 'a@b.com', password: 'wrong' })
-    ).rejects.toThrow('Invalid login credentials');
+    await expect(requestEmailOtp('a@b.com')).rejects.toThrow(
+      'Email rate limit exceeded'
+    );
   });
 });
 
-describe('signUpWithEmail', () => {
-  it('forwards name into raw_user_meta_data so the auth trigger can pick it up', async () => {
-    mocked.signUp.mockResolvedValue({
-      data: { user: { id: 'u2' }, session: { access_token: 'tok' } },
+describe('verifyEmailOtp', () => {
+  it('verifies the 6-digit code and returns the session', async () => {
+    mocked.verifyOtp.mockResolvedValue({
+      data: { session: { access_token: 't' } },
       error: null,
     });
-    await signUpWithEmail({
+    const result = await verifyEmailOtp('a@b.com', '123456');
+    expect(mocked.verifyOtp).toHaveBeenCalledWith({
       email: 'a@b.com',
-      password: 'hunter22',
-      name: 'Mochi',
+      token: '123456',
+      type: 'email',
     });
-    expect(mocked.signUp).toHaveBeenCalledWith({
-      email: 'a@b.com',
-      password: 'hunter22',
-      options: { data: { name: 'Mochi' } },
-    });
+    expect(result.session?.access_token).toBe('t');
   });
 
-  it('throws when supabase reports an error', async () => {
-    mocked.signUp.mockResolvedValue({
+  it('throws when the code is wrong or expired', async () => {
+    mocked.verifyOtp.mockResolvedValue({
       data: null,
-      error: { message: 'User already registered' },
+      error: { message: 'Token has expired or is invalid' },
     });
-    await expect(
-      signUpWithEmail({ email: 'a@b.com', password: 'hunter22', name: 'M' })
-    ).rejects.toThrow('User already registered');
+    await expect(verifyEmailOtp('a@b.com', '000000')).rejects.toThrow(
+      'Token has expired or is invalid'
+    );
   });
 });
 
 describe('signOut', () => {
-  it('calls supabase.auth.signOut and ignores undefined response', async () => {
+  it('calls supabase.auth.signOut', async () => {
     mocked.signOut.mockResolvedValue({ error: null });
     await signOut();
     expect(mocked.signOut).toHaveBeenCalledTimes(1);
@@ -107,10 +92,10 @@ describe('getSession', () => {
 
   it('returns the session object when present', async () => {
     mocked.getSession.mockResolvedValue({
-      data: { session: { access_token: 'tok', user: { id: 'u1' } } },
+      data: { session: { access_token: 't', user: { id: 'u1' } } },
       error: null,
     });
     const session = await getSession();
-    expect(session?.access_token).toBe('tok');
+    expect(session?.access_token).toBe('t');
   });
 });
