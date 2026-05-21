@@ -9,7 +9,16 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.boni.app"
+      "bundleIdentifier": "com.boni.app",
+      "infoPlist": {
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": [
+              "com.googleusercontent.apps.466581390457-43m312g6mhp846tjt424tfuv44m1q9nr"
+            ]
+          }
+        ]
+      }
     },
     "android": {
       "edgeToEdgeEnabled": true,

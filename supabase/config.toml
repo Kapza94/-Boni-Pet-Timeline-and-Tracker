@@ -329,6 +329,20 @@ skip_nonce_check = false
 # If enabled, it will allow the user to successfully authenticate when the provider does not return an email address.
 email_optional = false
 
+[auth.external.google]
+enabled = true
+# iOS OAuth client ID — sourced from .env.local so it isn't committed.
+client_id = "env(EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID)"
+# Native iOS ID-token flow doesn't use a secret; the audience claim on
+# the ID token is verified against client_id above.
+secret = ""
+redirect_uri = ""
+url = ""
+# Local development relies on the OS keychain to keep nonces in sync; the
+# Supabase docs explicitly recommend skipping the nonce check locally.
+skip_nonce_check = true
+email_optional = false
+
 # Allow Solana wallet holders to sign in to your project via the Sign in with Solana (SIWS, EIP-4361) standard.
 # You can configure "web3" rate limit in the [auth.rate_limit] section and set up [auth.captcha] if self-hosting.
 [auth.web3.solana]

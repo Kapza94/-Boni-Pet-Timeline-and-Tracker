@@ -176,6 +176,36 @@ Supportive, brief, never clinical, never alarmist.
   Settings flips `households.subscription_tier` via the stub RPC so
   premium UIs can be QA'd before real purchases work. Production
   builds must reject the stub endpoint.
+- **TODO — Sign in with Apple is deferred.** Blocked on the same
+  Apple Developer account. The Apple button on `(auth)/sign-in.tsx`
+  stays disabled until then. When the account exists:
+  (1) enable Sign in with Apple capability in the App ID,
+  (2) install `expo-apple-authentication`,
+  (3) build a `useAppleSignIn` hook mirroring `useGoogleSignIn`
+      (request identityToken + nonce, exchange via
+      `supabase.auth.signInWithIdToken({ provider: 'apple' })`),
+  (4) enable `[auth.external.apple]` in `supabase/config.toml`,
+  (5) flip the button `disabled` flag in the sign-in screen.
+- **TODO — Google OAuth blocked in Expo Go.** SDK 49+ removed the
+  `auth.expo.io` proxy; Google's iOS OAuth client rejects the
+  `exp://...` redirect Expo Go emits, so a native dev client is
+  required to verify the Google flow end-to-end. The wiring itself is
+  done (`hooks/useGoogleSignIn.ts`, `app.json` URL scheme,
+  `supabase/config.toml` `[auth.external.google]`,
+  `EXPO_PUBLIC_GOOGLE_*_CLIENT_ID` in `.env.local`). Deferred until
+  after MVP feature work to avoid burning dev-build cycles mid-feature.
+  When ready to verify:
+  (1) `npm_config_cache=/tmp/npm-cache-boni npx eas-cli build
+      --profile development --platform ios --simulator` (uses the
+      existing `eas.json` development-simulator profile),
+  (2) wait ~10–15 min, download the `.tar.gz`, extract `Boni.app`,
+      drag into the running iOS Simulator,
+  (3) `npx expo start --dev-client` to hot-reload JS into the native
+      shell,
+  (4) tap "Continue with Google" → expect the system browser to open
+      the Google consent screen and return to a signed-in session.
+  Rebuilds are only needed when native deps, `app.json`, or URL
+  schemes change — JS-only edits hot-reload over Metro.
 - **Memory book is PDF, not physical.** Original brief had a $59
   hardcover; replaced with a downloadable PDF (user-decided
   2026-05-20). Server compiles, returns a 7-day signed URL, iOS share

@@ -12,7 +12,11 @@
     "format": "prettier --write .",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:ci": "jest --ci --maxWorkers=2"
+    "test:ci": "jest --ci --maxWorkers=2",
+    "db:reset": "supabase db reset --local",
+    "db:test": "supabase test db --local",
+    "mail": "open http://127.0.0.1:54324",
+    "studio": "open http://127.0.0.1:54323"
   },
   "jest": {
     "preset": "jest-expo",
@@ -23,6 +27,7 @@
       "node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|nativewind|react-native-css-interop|@gorhom/.*|lucide-react-native|@shopify/react-native-skia))"
     ],
     "moduleNameMapper": {
+      "^console$": "<rootDir>/__mocks__/consoleMock.js",
       "\\.(otf|ttf|png|jpg|jpeg|svg)$": "<rootDir>/__mocks__/fileMock.js"
     }
   },
@@ -38,8 +43,10 @@
     "@supabase/supabase-js": "^2.106.1",
     "@tanstack/react-query": "^5.100.11",
     "expo": "~54.0.33",
+    "expo-auth-session": "~7.0.11",
     "expo-blur": "~15.0.8",
     "expo-constants": "~18.0.13",
+    "expo-crypto": "~15.0.9",
     "expo-font": "~14.0.11",
     "expo-haptics": "~15.0.8",
     "expo-image": "~3.0.11",
