@@ -105,6 +105,22 @@ its own files. Match the structure as you go.
   signature of the visual paradigm — never omit.
 - **Glass strengths**: thin `0.32`, regular `0.58`, strong `0.72` fill
   opacity. Blur 24px (regular) / 36px (strong) / 12px (thin).
+- **Text-on-glass contrast rule (non-negotiable)**:
+  - **Bright glass** (regular 0.58+ / strong 0.72+) = always **dark
+    text**. Use `colors.onGlass[1]` (#181a21) for primary, `onGlass[2]`
+    (#45474e) for meta, `onGlass[3]` (#787a80) for tertiary.
+  - **Thin glass** (0.32) over the dark canvas = always **light text**.
+    Use `colors.ink[1]` (#faf8f5). Never dark text on thin glass.
+  - **Pastel accent washes** (lavender / peach / rose / sky at 0.20–0.40
+    over canvas) = always **light text** (`ink[1]`).
+  - **Honey reminder cards** (warm-yellow surfaces) = opaque honey
+    `>= 0.80` with **dark text** (`onGlass[1]`). Never a wash with
+    light text — that's the readability bug.
+  - **Emerald active surfaces** (done tiles, running activity card) =
+    light text + emerald icon + glow.
+  This rule is the one we keep blowing in mockups; if a glass surface
+  ever feels unreadable it's because this rule was violated. Fix the
+  surface, don't darken the text past spec.
 - **Canvas**: dark, `oklch(22% 0.022 270)`. **Never pure black.**
   Painted with 4 pastel blobs (lavender, rose, peach, sky) via Skia.
   Blobs drift on 60s+ cycles when idle on hero/onboarding screens
