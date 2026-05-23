@@ -144,7 +144,7 @@ StoreKit wiring lands in a follow-up release.
   mocked glass timeline card showing "Milo's first swim" + a logged walk
   toggle. CTA: "Show me".
 - **Step 2 — Tap to taste.** Three interactive chips: "Set morning food",
-  "Set heartworm pill", "Track daily walks". Tapping any chip animates it
+  "Log a walk", "Track weight". Tapping any chip animates it
   into a live "Your day · preview" glass panel below. Live preview shows
   "Tap one above — watch it populate." when empty. CTA: "Set up my pet".
 - **Step 3 — Pet profile.** Circular photo drop-zone, Name field
