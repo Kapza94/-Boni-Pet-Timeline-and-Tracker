@@ -393,3 +393,73 @@ Format: date, one-line insight, optional context.
   gorhom, but the visual shell + backdrop-to-dismiss is all F01
   needs; drag-to-dismiss will swap gorhom in behind the same public
   API in F06 (Quick Log) where the gesture actually matters.
+
+---
+
+## Session handover — 2026-05-25
+
+**Where we are:** Mid-architecture-rework. F00–F02 shipped on main.
+F03 (onboarding) is built but **parked** on `feat/F03-onboarding`,
+awaiting visual verification AND a decision whether to rebrand its
+"Today" tab into the new Home spec below. Don't merge F03 as-is.
+
+**What's locked (do not relitigate):**
+
+1. **Master architecture** — `docs/superpowers/specs/2026-05-23-boni-v2-architecture-design.md`
+   - Free vs Paid split locked. 5 paid pillars: Memory & Legacy,
+     Family Coordination, Multi-Pet, Vet & Records Vault, Calendar &
+     Integrations.
+   - 9-screen decomposition order locked. Home/Calendar is #1.
+   - Data model deltas locked (pets extensions + 7 new tables).
+   - Anti-goal added: **no AI medical advice**.
+
+2. **Sub-project #1 spec** — `docs/superpowers/specs/2026-05-23-home-calendar-design.md`
+   - **APPROVED by user 2026-05-25.** Implementation plan is the
+     next deliverable.
+   - 4-tab nav locked: Home / Calendar / Pet / Medical. Settings via
+     avatar (NOT a tab). Memory/Family/Expenses tabs deprecated.
+   - Home = calendar feed + 4×2 quick-log grid + due-today reminders.
+     Tile order: Food/Water/Walk/Poop/Pee/Weight/Train/Photo(paid).
+   - Single tap = log/timer; long press = backdate sheet.
+   - Running activity = DB-backed (`activities.started_at` +
+     generated `is_running` column) + sticky local notification.
+     **No iOS Live Activity in v1.**
+   - Calendar = Agenda only (no month grid/day/week in v1). Month
+     strip + expense card + agenda + paid sync card + add-event FAB.
+   - Sheet shell stays RN Modal until F06; gorhom swap deferred.
+   - 4 new tables this sub-project owns: `weight_entries`,
+     `reminders`, `expenses`, `calendar_links`. Plus `activities`
+     gets `started_at`/`ended_at`/`is_running` columns + `pee` +
+     `training` enum values.
+   - 4 RPCs: `start_activity`, `stop_activity`, `dismiss_reminder`,
+     `snooze_reminder`. All `SECURITY DEFINER`, household-checked.
+
+**Next concrete step:** Invoke `superpowers:writing-plans` against
+the Home/Calendar sub-project spec. Output goes to
+`docs/superpowers/plans/2026-05-25-home-calendar.md` (or 2026-05-23
+date stamp — pick the spec date). Plan must respect:
+- Branch off `main` (NOT off `feat/F03-onboarding`).
+- Strict TDD per the workflow above.
+- One F## commit per task; squash-merge to main.
+- Each task ≤ 2–5 min steps; complete code blocks, exact file paths,
+  exact commands. No placeholders.
+
+**After implementation plan lands:** per-screen brainstorm
+sub-projects #2–9 (Pet, Medical, Memory, Multi-pet, Family,
+Expenses, Settings, Login). Then single rewrite commit of
+`SPEC.md` + `FEATURES.md` to replace §3, §5, §6.
+
+**Open items still parked:**
+- F03 simulator verification (task #24)
+- F02 Apple sign-in (blocked on Apple Dev account, task #14)
+- Google OAuth end-to-end verification (needs EAS dev build, recipe
+  in the Google OAuth TODO above)
+- Heartworm pill default example was scrubbed from SPEC §3 step-2;
+  if it reappears anywhere, kill it on sight (user is allergic).
+
+**Visual rules re-affirmed this rework (the bug we keep hitting):**
+text-on-glass contrast rule above is non-negotiable. Bright glass
+= dark text. Thin glass over canvas = light text. Honey reminders
+= opaque honey ≥ 0.80 + dark text, never a wash. If a surface
+reads as unreadable, fix the surface — don't darken the text past
+spec.
